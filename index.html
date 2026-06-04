@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
-<title>EarVault 耳钉洞藏</title>
+<title>耳钉抽签小铺</title>
 <style>
 :root{
   --bg:#0f0f23;--bg2:#16162a;--bg3:#1a1a3e;--card:rgba(255,255,255,.04);
@@ -968,8 +968,7 @@ const app = createApp({
   <div class="nav">
     <div class="logo-area">
       <span class="logo-icon">✦</span>
-      <span class="logo-text">EarVault</span>
-      <span class="logo-sub">耳钉洞藏</span>
+      <span class="logo-text">耳钉抽签小铺</span>
     </div>
     <span class="nav-wish" @click="page='wishpool'">💫<span class="wish-badge" v-if="wishPool.length">{{wishPool.length}}</span></span>
   </div>
@@ -978,7 +977,7 @@ const app = createApp({
   <div class="page-section" :class="{active:page==='index'}">
     <div class="hero">
       <div class="hero-bg"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div></div>
-      <h1 class="hero-title">叮当耳阁</h1>
+      <h1 class="hero-title">耳钉抽签小铺</h1>
       <p class="hero-sub">每日一次 · 虚拟耳钉盲盒</p>
       <div class="gacha-card">
         <div class="gacha-ready" v-if="canDraw"><span class="pulse-dot"></span>今日盲盒已就绪</div>
