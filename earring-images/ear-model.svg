@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 185" width="150">
+  <defs>
+    <linearGradient id="earGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f5d8c8"/>
+      <stop offset="100%" style="stop-color:#e8c4b0"/>
+    </linearGradient>
+    <linearGradient id="innerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#edbfaa"/>
+      <stop offset="100%" style="stop-color:#ddb09a"/>
+    </linearGradient>
+  </defs>
+  <!-- 外轮廓 - 圆润卡通耳形 -->
+  <path d="M62,6
+           C80,4 98,14 104,32
+           C110,50 112,70 108,90
+           C104,110 96,128 86,142
+           C78,153 68,164 60,174
+           C52,182 42,184 34,178
+           C24,170 16,156 12,138
+           C7,116 6,92 10,68
+           C14,42 28,18 44,10
+           C50,7 56,6 62,6Z"
+        fill="url(#earGrad)" stroke="#d4a48a" stroke-width="1.5"/>
+  <!-- 耳轮 - 外圈圆润边缘 -->
+  <path d="M62,12
+           C78,10 93,19 99,35
+           C105,52 107,70 103,88
+           C99,106 92,122 83,135
+           C75,146 66,155 59,163"
+        fill="none" stroke="#c99a84" stroke-width="3" stroke-linecap="round"/>
+  <!-- 对耳轮 - Y形分支 -->
+  <path d="M74,38 Q72,58 76,82 Q79,100 73,118"
+        fill="none" stroke="#c99a84" stroke-width="2" stroke-linecap="round"/>
+  <!-- 对耳轮上脚 -->
+  <path d="M72,55 Q62,40 54,33"
+        fill="none" stroke="#c99a84" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- 对耳轮下脚 -->
+  <path d="M75,72 Q67,82 59,90"
+        fill="none" stroke="#c99a84" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- 三角窝区域 -->
+  <path d="M56,36 Q68,45 72,58 Q68,64 56,60 Q46,51 56,36Z"
+        fill="#f0cbb6" stroke="none"/>
+  <!-- 耳甲腔 - 主凹陷 -->
+  <ellipse cx="54" cy="82" rx="20" ry="25" fill="url(#innerGrad)" opacity="0.6"/>
+  <!-- 耳甲腔下部 -->
+  <ellipse cx="52" cy="106" rx="15" ry="18" fill="#e0bba6" opacity="0.5"/>
+  <!-- 耳屏 -->
+  <path d="M26,98 Q22,110 27,123 Q33,131 39,126 Q36,114 34,100Z"
+        fill="#f0cdb8" stroke="#c99a84" stroke-width="1"/>
+  <!-- 对耳屏 -->
+  <ellipse cx="53" cy="130" rx="9" ry="7" fill="#f0cdb8" stroke="#c99a84" stroke-width="0.8"/>
+  <!-- 耳屏间切迹 -->
+  <path d="M39,122 Q48,136 54,132"
+        fill="none" stroke="#c99a84" stroke-width="0.8" stroke-linecap="round"/>
+  <!-- 耳垂 -->
+  <path d="M36,140
+           Q30,158 34,172
+           C38,184 52,188 63,186
+           C76,184 85,175 87,160
+           C88,148 81,137 71,136
+           Q54,134 36,140Z"
+        fill="#f5dcc9" stroke="#c99a84" stroke-width="1.5"/>
+  <!-- 高光效果 -->
+  <path d="M75,25 Q82,38 84,55"
+        fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M42,152 Q38,162 40,174"
+        fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round"/>
+</svg>

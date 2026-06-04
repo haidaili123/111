@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>EarVault 耳钉洞藏</title>
+<style>
+:root{
+  --bg:#0f0f23;--bg2:#16162a;--bg3:#1a1a3e;--card:rgba(255,255,255,.04);
+  --primary:#e94560;--secondary:#ff6b9d;--accent:#7c4dff;
+  --rarity-common:#aaa;--rarity-rare:#4fc3f7;--rarity-epic:#ab47bc;--rarity-legendary:#ffab00;
+  --text:#fff;--text2:#aaa;--text3:#666;
+  --radius-sm:12rpx;--radius-md:16rpx;--radius-lg:20rpx;--radius-xl:24rpx;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+.container{max-width:500px;margin:0 auto;padding:20px 16px 80px}
+/* Nav */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0;margin-bottom:24px}
+.logo-area{display:flex;align-items:center;gap:8px}
+.logo-icon{font-size:28px;color:var(--primary)}
+.logo-text{font-size:24px;font-weight:bold;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:13px;color:var(--text3);margin-left:4px}
+.nav-wish{position:relative;font-size:28px;cursor:pointer}
+.wish-badge{position:absolute;top:-4px;right:-4px;background:var(--primary);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px}
+
+/* Hero */
+.hero{position:relative;text-align:center;padding:30px 0;overflow:hidden;margin-bottom:24px}
+.hero-bg .glow{position:absolute;border-radius:50%;filter:blur(60px);opacity:.35}
+.hero-bg .g1{width:200px;height:200px;background:var(--primary);top:-30px;right:-30px}
+.hero-bg .g2{width:140px;height:140px;background:var(--accent);bottom:10px;left:-20px}
+.hero-bg .g3{width:100px;height:100px;background:#00bcd4;top:40%;left:30%}
+.hero-title{font-size:42px;font-weight:bold;letter-spacing:6px;position:relative;z-index:1}
+.hero-sub{font-size:16px;color:var(--text2);margin-top:8px;position:relative;z-index:1}
+
+/* Gacha Card */
+.gacha-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-xl);padding:28px;backdrop-filter:blur(10px);position:relative;z-index:1;margin-bottom:24px}
+.gacha-ready,.gacha-done{display:flex;align-items:center;justify-content:center;gap:8px;font-size:17px;margin-bottom:20px}
+.pulse-dot{width:10px;height:10px;background:#4caf50;border-radius:50%;animation:pulse 1.5s infinite}
+.check-icon{width:22px;height:22px;line-height:22px;text-align:center;background:rgba(76,175,80,.2);color:#4caf50;border-radius:50%;font-size:12px}
+.gacha-btn{width:100%;height:56px;border-radius:28px;font-size:20px;font-weight:bold;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;box-shadow:0 6px 24px rgba(233,69,96,.4);transition:transform .1s}
+.btn-primary:active{transform:scale(.97)}
+.btn-disabled{background:rgba(255,255,255,.06);color:#555;cursor:not-allowed}
+
+/* Stats */
+.stats{display:flex;justify-content:space-around;padding:20px;background:var(--card);border-radius:var(--radius-lg);margin-bottom:24px}
+.stat-item{text-align:center;cursor:pointer}
+.stat-num{display:block;font-size:28px;font-weight:bold}
+.stat-label{font-size:13px;color:var(--text3);margin-top:2px}
+.stat-divider{width:1px;height:40px;background:rgba(255,255,255,.1)}
+
+/* Quick Entry */
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.entry{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 0;background:var(--card);border-radius:var(--radius-md);cursor:pointer;transition:transform .1s;border:none;color:var(--text);font-size:13px}
+.entry:active{transform:scale(.95)}
+.entry-icon{width:48px;height:48px;line-height:48px;text-align:center;font-size:22px;border-radius:50%}
+.entry-icon.ear{background:rgba(233,69,96,.15)}
+.entry-icon.cal{background:rgba(33,150,243,.15)}
+.entry-icon.wish{background:rgba(255,171,0,.15)}
+.entry-icon.coll{background:rgba(171,71,188,.15)}
+
+/* Section */
+.section{margin-bottom:24px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section-title{font-size:20px;font-weight:bold}
+.section-more{font-size:14px;color:var(--text2);cursor:pointer;background:none;border:none;color:var(--text2)}
+
+/* Recent Card */
+.recent-card{display:flex;align-items:center;gap:16px;padding:20px;border-radius:var(--radius-lg);background:var(--card);border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden}
+.recent-img{width:70px;height:70px;border-radius:50%;object-fit:contain;background:rgba(0,0,0,.2)}
+.recent-info{flex:1}
+.recent-name{display:block;font-size:20px;font-weight:bold;margin-bottom:4px}
+.recent-rarity{font-size:15px}
+.recent-glow{position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.4}
+.glow-common{background:var(--rarity-common)}.glow-rare{background:var(--rarity-rare)}
+.glow-epic{background:var(--rarity-epic)}.glow-legendary{background:var(--rarity-legendary)}
+
+/* Page Section */
+.page-section{display:none}
+.page-section.active{display:block}
+
+/* ===== GACHA PAGE ===== */
+.gacha-machine{text-align:center;padding:30px 0;min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.mystery-box{width:220px;height:200px;position:relative;cursor:pointer}
+.mystery-box.shake{animation:boxShake .3s ease-in-out}
+.mystery-box.super-shake{animation:superShake .15s ease-in-out infinite}
+.box-body{width:200px;height:170px;background:linear-gradient(145deg,var(--primary),#c62828);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin:0 auto;box-shadow:0 14px 40px rgba(233,69,96,.4),inset 0 2px 0 rgba(255,255,255,.2)}
+.box-emoji{font-size:56px}
+.box-text{font-size:16px;color:rgba(255,255,255,.8)}
+.ribbon-h{position:absolute;width:100%;height:20px;background:#ffd54f;top:75px}
+.ribbon-v{position:absolute;width:20px;height:170px;background:#ffd54f;left:100px;top:15px}
+.box-glow{position:absolute;inset:-30px;border-radius:50%;background:radial-gradient(circle,rgba(233,69,96,.3),transparent 70%);animation:glowPulse 2s ease-in-out infinite}
+.shake-text{font-size:18px;color:var(--text2);margin-top:20px;animation:blink .5s step-end infinite}
+
+/* Result */
+.result-reveal{text-align:center;animation:cardReveal .6s cubic-bezier(.34,1.56,.64,1) forwards}
+.result-image{width:100px;height:100px;margin-bottom:16px;object-fit:contain}
+.result-name{display:block;font-size:28px;font-weight:bold;margin-bottom:8px}
+.result-rarity{display:inline-block;font-size:16px;padding:3px 16px;border-radius:14px;background:rgba(0,0,0,.2);margin-bottom:12px}
+.result-desc{font-size:14px;color:#999;line-height:1.5}
+.particles{position:absolute;inset:0;pointer-events:none}
+.particle{position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:currentColor;animation:particleExplode .8s ease-out forwards;opacity:0}
+.result-actions{display:flex;gap:12px;margin:20px 0}
+.action-btn{flex:1;height:48px;border-radius:24px;font-size:16px;border:none;cursor:pointer}
+.btn-owned{background:rgba(76,175,80,.15);color:#81c784;border:1px solid rgba(76,175,80,.2)}
+.btn-wanted{background:rgba(233,69,96,.1);color:var(--secondary);border:1px solid rgba(233,69,96,.2)}
+.btn-outline{width:100%;height:48px;background:transparent;color:var(--text2);border:1px solid rgba(136,138,170,.2);border-radius:24px;font-size:16px;cursor:pointer;margin-top:8px}
+.no-draw{text-align:center;padding:40px 0}
+.no-draw-icon{font-size:48px}
+.no-draw-text{display:block;font-size:20px;margin-top:12px;color:#ccc}
+.no-draw-sub{display:block;font-size:15px;margin-top:6px;color:var(--text3)}
+.wish-hint{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;padding:8px 16px;background:rgba(255,215,0,.06);border-radius:14px;font-size:14px}
+.wish-hint .wish-icon{font-size:18px}
+.wish-hint .wish-text{color:#ffc107}
+.history-preview{margin-top:24px}
+.history-preview .preview-title{display:block;font-size:16px;color:var(--text2);margin-bottom:12px}
+.history-scroll{overflow-x:auto;white-space:nowrap;padding-bottom:8px}
+.history-scroll::-webkit-scrollbar{height:0}
+.history-list{display:inline-flex;gap:10px}
+.history-item{width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid transparent;flex-shrink:0;background:rgba(255,255,255,.04)}
+.history-item.hist-common{border-color:rgba(170,170,170,.3)}
+.history-item.hist-rare{border-color:rgba(79,195,247,.4)}
+.history-item.hist-epic{border-color:rgba(171,71,188,.4)}
+.history-item.hist-legendary{border-color:rgba(255,171,0,.5)}
+.history-item img{width:100%;height:100%;object-fit:contain}
+
+/* ===== COLLECTION PAGE ===== */
+.filter-tabs{display:flex;gap:12px;margin-bottom:16px}
+.filter-tab{padding:5px 14px;border-radius:14px;font-size:14px;color:var(--text3);cursor:pointer;background:rgba(255,255,255,.03)}
+.filter-tab.active{color:var(--primary);background:rgba(233,69,96,.1)}
+.filter-chips{overflow-x:auto;white-space:nowrap;margin-bottom:16px;padding-bottom:4px}
+.filter-chips::-webkit-scrollbar{height:0}
+.chip-list{display:inline-flex;gap:8px}
+.filter-chip{padding:5px 16px;border-radius:14px;font-size:13px;color:var(--text2);cursor:pointer;background:var(--card);flex-shrink:0}
+.filter-chip.active{color:#fff;background:rgba(233,69,96,.2)}
+.collection-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.collection-item{background:var(--card);border-radius:var(--radius-md);padding:14px;text-align:center;border:1px solid transparent;cursor:pointer;transition:transform .1s}
+.collection-item:active{transform:scale(.95)}
+.collection-item.rarity-common{border-color:rgba(170,170,170,.1)}
+.collection-item.rarity-rare{border-color:rgba(79,195,247,.15)}
+.collection-item.rarity-epic{border-color:rgba(171,71,188,.15)}
+.collection-item.rarity-legendary{border-color:rgba(255,171,0,.25)}
+.item-img-wrap{position:relative;width:90px;height:90px;margin:0 auto 8px;border-radius:50%;background:rgba(0,0,0,.15);overflow:hidden}
+.item-img-wrap img{width:100%;height:100%;object-fit:contain}
+.status-tag{position:absolute;bottom:0;right:0;width:24px;height:24px;line-height:24px;text-align:center;font-size:11px;border-radius:50%}
+.status-tag.owned{background:rgba(76,175,80,.85)}
+.status-tag.wanted{background:rgba(233,69,96,.85)}
+.status-tag.hidden{display:none}
+.item-name{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-rarity{font-size:12px}
+.empty-state{grid-column:span 3;text-align:center;padding:60px 0}
+.empty-icon{font-size:56px}
+.empty-text{display:block;font-size:18px;color:var(--text2);margin-top:12px}
+.empty-sub{display:block;font-size:14px;color:var(--text3);margin-top:4px}
+
+/* Detail Modal */
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
+.modal-popup{width:100%;max-height:85vh;border-radius:24px 24px 0 0;background:var(--bg3);overflow-y:auto;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1)}
+.modal-header{padding:40px 30px 30px;text-align:center}
+.modal-header img{width:120px;height:120px}
+.modal-body{padding:20px 30px 50px}
+.modal-name{display:block;font-size:26px;font-weight:bold;text-align:center;margin-bottom:12px}
+.modal-meta{display:flex;justify-content:center;gap:10px;margin-bottom:16px}
+.meta-tag{font-size:14px;padding:3px 12px;border-radius:12px;border:1px solid #444;color:var(--text2)}
+.modal-desc{display:block;font-size:16px;color:var(--text2);text-align:center;line-height:1.6;margin-bottom:24px}
+.modal-actions{display:flex;gap:12px;margin-bottom:16px}
+.modal-actions button{flex:1;height:48px;border-radius:16px;font-size:16px;border:none;cursor:pointer}
+.btn-remove{width:100%;height:44px;background:transparent;color:var(--text3);border:1px solid rgba(255,255,255,.08);border-radius:12px;font-size:15px;cursor:pointer}
+
+/* ===== EAR MAP PAGE ===== */
+.ear-stage{display:flex;align-items:center;justify-content:space-around;padding:20px 0;min-height:420px}
+.ear-col{position:relative;width:150px;text-align:center}
+.ear-col .ear-label{display:block;font-size:15px;color:var(--text2);margin-top:6px}
+.ear-img-wrap{position:relative;width:150px;height:auto;cursor:pointer;display:inline-block}
+.ear-img{width:100%;height:auto;border-radius:12px;filter:drop-shadow(0 3px 10px rgba(0,0,0,.25))}
+.ear-img.mirror{transform:scaleX(-1)}
+.hole-dot{position:absolute;width:10px;height:10px;border-radius:50%;border:2px solid #fff;background:#4caf50;transform:translate(-50%,-50%);transition:all .2s;z-index:5;cursor:pointer}
+.hole-earring{position:absolute;width:32px;height:32px;border-radius:50%;border:2px solid #e94560;background:rgba(233,69,96,.15);transform:translate(-50%,-50%);z-index:6;cursor:pointer;overflow:hidden;box-shadow:0 0 10px rgba(233,69,96,.3);transition:all .2s}
+.hole-earring:hover{transform:translate(-50%,-50%) scale(1.15);z-index:10}
+.hole-earring-img{width:100%;height:100%;object-fit:contain}
+.center-ctrl{text-align:center}
+.center-ctrl .side-label{display:block;font-size:18px;color:var(--text2);margin-bottom:4px}
+.center-ctrl .hole-count{display:block;font-size:28px;font-weight:bold;color:var(--primary);margin-bottom:16px}
+.btn-add-hole{height:44px;padding:0 24px;border-radius:22px;font-size:15px;background:linear-gradient(135deg,var(--accent),#b388ff);color:#fff;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(124,77,255,.3)}
+.equipped-row{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;justify-content:center}
+.equip-dot{width:36px;height:36px;border-radius:50%;overflow:hidden;border:2px solid var(--primary);background:rgba(233,69,96,.15);cursor:pointer}
+.equip-dot img{width:100%;height:100%;object-fit:contain}
+.hole-detail-section{margin-top:24px}
+.hole-scroll{overflow-x:auto;white-space:nowrap;padding-bottom:8px}
+.hole-scroll::-webkit-scrollbar{height:0}
+.hole-card-list{display:inline-flex;gap:16px}
+.hole-card{flex-shrink:0;width:260px;background:var(--card);border-radius:var(--radius-lg);padding:16px;border:1px solid rgba(255,255,255,.05)}
+.hole-name{display:block;font-size:17px;font-weight:bold;margin-bottom:2px}
+.hole-date{display:block;font-size:12px;color:var(--text3);margin-bottom:6px}
+.healing-badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:8px;margin-bottom:8px}
+.hole-actions-row{display:flex;gap:8px;margin-top:8px}
+.hole-act-btn{flex:1;height:36px;border-radius:10px;font-size:13px;border:none;cursor:pointer}
+.hole-act-btn.equip{background:rgba(76,175,80,.12);color:#81c784}
+.hole-act-btn.remove{background:rgba(233,69,96,.06);color:#ff8a80}
+.current-equip{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.04)}
+.current-equip img{width:36px;height:36px;border-radius:50%}
+.unequip-btn{font-size:12px;color:var(--primary);cursor:pointer;padding:3px 10px;background:rgba(233,69,96,.08);border-radius:6px}
+.no-holes-tip{padding:20px;text-align:center;color:var(--text3);font-size:15px}
+
+/* Position Picker */
+.pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
+.pos-item{padding:12px;text-align:center;background:var(--card);border-radius:12px;border:1px solid transparent;cursor:pointer}
+.pos-item.selected{border-color:var(--accent);background:rgba(124,77,255,.12)}
+.pos-item .pos-icon{display:block;font-size:18px;margin-bottom:2px}
+.pos-item .pos-name{font-size:12px;color:var(--text2)}
+
+/* Earring Selector */
+.earring-selector{max-height:350px;overflow-y:auto;margin-bottom:16px}
+.earring-selector::-webkit-scrollbar{width:3px}
+.earring-selector::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.selector-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.selectable-earring{text-align:center;padding:10px;border-radius:10px;border:1px solid transparent;background:var(--card);cursor:pointer}
+.selectable-earring.selected{border-color:var(--accent);background:rgba(124,77,255,.12)}
+.selectable-earring img{width:44px;height:44px;margin-bottom:2px;object-fit:contain}
+.selectable-earring .sel-name{font-size:11px;color:#999;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ===== WISH POOL PAGE ===== */
+.info-card{display:flex;gap:12px;padding:16px;background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.1);border-radius:var(--radius-md);margin-bottom:20px}
+.info-icon{font-size:30px}
+.info-title{display:block;font-size:16px;font-weight:bold;color:#ffc107;margin-bottom:4px}
+.info-desc{font-size:13px;color:#aa9944;line-height:1.5}
+.upload-area{padding:50px 0;border:2px dashed rgba(255,215,0,.2);border-radius:var(--radius-lg);text-align:center;background:rgba(255,215,0,.02);cursor:pointer;margin-bottom:20px}
+.upload-icon{font-size:40px}
+.upload-text{display:block;font-size:17px;color:#ccc;margin-top:10px}
+.upload-hint{display:block;font-size:13px;color:var(--text3);margin-top:4px}
+.wish-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.wish-item{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--card)}
+.wish-item img{width:100%;height:100%;object-fit:cover}
+.wish-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:8px;display:flex;justify-content:space-between;align-items:flex-end}
+.wish-tag{font-size:10px;padding:2px 8px;background:rgba(124,77,255,.8);border-radius:6px}
+.wish-del{width:24px;height:24px;line-height:24px;text-align:center;background:rgba(239,83,80,.8);border-radius:50%;font-size:11px;cursor:pointer}
+.bonus-preview{padding:16px;background:var(--card);border-radius:var(--radius-md)}
+.bonus-title{display:block;font-size:16px;font-weight:bold;margin-bottom:12px}
+.bonus-tags{display:flex;flex-wrap:wrap;gap:8px}
+.bonus-tag{display:flex;align-items:center;gap:4px;padding:5px 12px;background:rgba(124,77,255,.08);border-radius:14px;font-size:13px}
+.bonus-tag .tag-bonus{color:#b388ff;font-weight:bold}
+
+/* ===== CALENDAR PAGE ===== */
+.month-switcher{display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:16px}
+.switch-btn{width:40px;height:40px;line-height:40px;text-align:center;font-size:22px;color:var(--text2);background:var(--card);border-radius:50%;cursor:pointer;border:none}
+.month-display{font-size:20px;font-weight:bold}
+.calendar-grid{background:var(--card);border-radius:var(--radius-lg);padding:16px;margin-bottom:20px}
+.weekday-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:8px}
+.weekday-cell{text-align:center;font-size:13px;color:var(--text3);padding:6px 0}
+.date-cells{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.date-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;position:relative;font-size:15px}
+.date-cell.other-month{color:#333}
+.date-cell.is-selected{background:rgba(124,77,255,.2)}
+.date-cell.today{background:rgba(233,69,96,.12)}
+.date-cell.today .date-num{color:var(--primary);font-weight:bold}
+.record-dot{position:absolute;bottom:3px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.date-detail{padding:20px;background:var(--card);border-radius:var(--radius-lg);border:1px solid rgba(255,255,255,.05);margin-bottom:20px}
+.detail-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.detail-date{font-size:20px;font-weight:bold}
+.detail-dayofweek{font-size:15px;color:var(--text2)}
+.record-card{padding:14px;background:rgba(0,0,0,.1);border-radius:10px;margin-bottom:8px}
+.record-note{display:block;font-size:16px;line-height:1.5}
+.record-time{display:block;font-size:12px;color:var(--text3);margin-top:4px}
+.add-record-btn,.add-more-btn{width:100%;height:44px;border-radius:22px;font-size:15px;background:linear-gradient(135deg,var(--accent),#b388ff);color:#fff;border:none;cursor:pointer;margin-top:12px}
+.healing-overview{margin-bottom:40px}
+.overview-title{display:block;font-size:20px;font-weight:bold;margin-bottom:16px}
+.timeline-list{display:flex;gap:16px;overflow-x:auto;padding-bottom:8px}
+.timeline-list::-webkit-scrollbar{height:0}
+.timeline-item{flex-shrink:0;width:200px;background:var(--card);border-radius:var(--radius-md);padding:16px;border-left:3px solid #555}
+.timeline-dot{width:12px;height:12px;border-radius:50%;margin-bottom:10px}
+.timeline-side{display:block;font-size:15px;font-weight:bold;margin-bottom:4px}
+.timeline-days{font-size:26px;font-weight:bold}
+.timeline-status{display:block;font-size:14px;font-weight:bold;margin-top:4px}
+.timeline-tip{display:block;font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4}
+
+/* Input Modal */
+.input-mask{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
+.input-dialog{width:100%;background:var(--bg3);border-radius:24px 24px 0 0;padding:28px;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1)}
+.input-title{display:block;text-align:center;font-size:20px;font-weight:bold;margin-bottom:16px}
+.input-textarea{width:100%;min-height:120px;padding:14px;background:rgba(255,255,255,.05);border-radius:12px;color:#fff;font-size:16px;border:1px solid rgba(255,255,255,.06);resize:none;font-family:inherit}
+.input-actions{display:flex;gap:12px;margin-top:16px}
+.input-actions button{flex:1;height:48px;border-radius:24px;font-size:16px;border:none;cursor:pointer}
+.input-btn-cancel{background:rgba(255,255,255,.06);color:var(--text2)}
+.input-btn-confirm{background:linear-gradient(135deg,var(--accent),#b388ff);color:#fff}
+.input-btn-confirm:disabled{opacity:.4;cursor:not-allowed}
+
+/* Dialog */
+.dialog-mask{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s}
+.dialog-content{width:90%;max-width:420px;max-height:80vh;background:var(--bg3);border-radius:20px;padding:28px;overflow-y:auto;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1)}
+.dialog-title{display:block;text-align:center;font-size:22px;font-weight:bold;margin-bottom:20px}
+.dialog-actions{display:flex;gap:12px;margin-top:20px}
+.dialog-actions button{flex:1;height:48px;border-radius:16px;font-size:16px;border:none;cursor:pointer}
+
+/* Tab Bar */
+.tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:500px;display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border-top:1px solid rgba(255,255,255,.06);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.tab-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;cursor:pointer;border:none;background:none;color:var(--text2);font-size:11px}
+.tab-item.active{color:var(--primary)}
+.tab-item .tab-icon{font-size:22px}
+
+/* Animations */
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+@keyframes boxShake{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+@keyframes superShake{0%,100%{transform:translate(0,0) rotate(0)}20%{transform:translate(-6px,4px) rotate(-8deg)}40%{transform:translate(4px,-6px) rotate(6deg)}60%{transform:translate(-4px,-3px) rotate(-4deg)}80%{transform:translate(3px,6px) rotate(8deg)}}
+@keyframes glowPulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.6;transform:scale(1.1)}}
+@keyframes blink{50%{opacity:0}}
+@keyframes cardReveal{from{transform:scale(.5) translateY(30px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes particleExplode{0%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(0);opacity:0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ==================== 数据层 ====================
+const RARITY_CONFIG = {
+  common:{label:'普通',color:'#aaaaaa',bg:'#2a2a3a'},
+  rare:{label:'稀有',color:'#4fc3f7',bg:'#1a3a4a'},
+  epic:{label:'史诗',color:'#ab47bc',bg:'#3a2a4a'},
+  legendary:{label:'传说',color:'#ffab00',bg:'#4a3a1a'},
+};
+const STYLE_CONFIG = {
+  minimal:{label:'极简',icon:'○'},
+  vintage:{label:'复古',icon:'♢'},
+  cute:{label:'可爱',icon:'♥'},
+  cool:{label:'酷飒',icon:'◆'},
+  elegant:{label:'优雅',icon:'✦'},
+};
+// EAR_POSITIONS 用于点击时自动匹配最近位置名称 (百分比坐标,基于新卡通耳朵图片)
+const EAR_POSITIONS = [
+  {key:'helix_top',name:'耳轮顶部',icon:'🔝',x:52,y:12},
+  {key:'helix_upper',name:'耳轮上段',icon:'·',x:75,y:19},
+  {key:'helix_mid',name:'耳轮中段',icon:'⭕',x:87,y:31},
+  {key:'helix_lower',name:'耳轮下段',icon:'◯',x:88,y:48},
+  {key:'helix_bottom',name:'耳轮末端',icon:'·',x:82,y:62},
+  {key:'anti_helix_upper',name:'对耳轮上脚',icon:'◎',x:63,y:23},
+  {key:'anti_helix_lower',name:'对耳轮下脚',icon:'◎',x:67,y:42},
+  {key:'conch_upper',name:'耳甲艇(上)',icon:'◉',x:53,y:30},
+  {key:'conch_lower',name:'耳甲腔(下)',icon:'◉',x:47,y:46},
+  {key:'tragus',name:'耳屏',icon:'▸',x:28,y:54},
+  {key:'anti_tragus',name:'对耳屏',icon:'▹',x:43,y:65},
+  {key:'lobe_upper',name:'耳垂上部',icon:'●',x:42,y:76},
+  {key:'lobe_center',name:'耳垂中心',icon:'◆',x:50,y:82},
+  {key:'lobe_lower',name:'耳垂下部',icon:'▼',x:57,y:89},
+];
+
+// ==================== 耳钉实物图片映射 ====================
+// AI生成的实物图(本地) + Unsplash Source API 按精确关键词搜索
+const EAR_IMG_DIR = 'earring-images/';
+const AI_IMAGES = {
+  1: 'A_realistic_product_photo_of_a_2026-06-03T09-17-03.png',      // 纯银圆珠
+  2: 'A_realistic_product_photo_of_a_2026-06-03T09-40-27.png',      // 金色细圈环
+  3: 'A_realistic_product_photo_of_a_2026-06-03T09-39-51.png',      // 玫瑰金小球
+  4: 'A_realistic_product_photo_of_a_2026-06-03T09-17-09.png',      // 淡水珍珠
+  5: 'realistic_product_photo_of_a_b_2026-06-03T09-21-22.png',      // 黑珍珠
+  6: 'realistic_product_photo_of_a_p_2026-06-03T09-18-29.png',      // 粉色爱心
+  7: 'realistic_product_photo_of_a_g_2026-06-03T09-18-27.png',      // 金色五角星
+  8: 'realistic_product_photo_of_a_c_2026-06-03T09-18-30.png',      // 弯月亮
+  9: 'realistic_product_photo_of_a_t_2026-06-03T09-19-18.png',      // 钛钢圆盘
+  10:'A_realistic_product_photo_of_a_2026-06-03T09-41-30.png',      // 透明亚克力棒
+  11:'realistic_product_photo_of_a_s_2026-06-03T09-21-59.png',      // 小花苞
+  12:'A_realistic_product_photo_of_a_2026-06-03T09-42-08.png',      // 贝壳纹理
+  13:'realistic_product_photo_of_a_t_2026-06-03T09-22-02.png',      // 水滴锆石
+  14:'realistic_product_photo_of_a_f_2026-06-03T09-28-37.png',      // 四叶草幸运
+  15:'realistic_product_photo_of_a_b_2026-06-03T09-36-13.png',      // 法式蝴蝶结
+  16:'realistic_product_photo_of_a_v_2026-06-03T09-22-41.png',      // 国风铜钱
+  17:'realistic_product_photo_of_a_c_2026-06-03T09-36-15.png',      // 朋克十字架
+  18:'realistic_product_photo_of_a_c_2026-06-03T09-22-45.png',      // 猫眼石
+  19:'realistic_product_photo_of_a_p_2026-06-03T09-23-20.png',      // 珍珠吊坠
+  20:'A_realistic_product_photo_of_a_2026-06-03T09-42-44.png',      // 几何三角框
+  21:'realistic_product_photo_of_a_s_2026-06-03T09-18-25.png',      // 小雏菊
+  22:'realistic_product_photo_of_an__2026-06-03T09-23-24.png',      // 极光渐变球
+  23:'realistic_product_photo_of_a_b_2026-06-03T09-29-17.png',      // 巴洛克珍珠
+  24:'realistic_product_photo_of_a_l_2026-06-03T09-24-11.png',      // 蕾丝花朵
+  25:'realistic_product_photo_of_a_h_2026-06-03T09-24-03.png',      // 六棱柱宝石
+  26:'realistic_product_photo_of_a_f_2026-06-03T09-24-04.png',      // 羽毛轻舞
+  27:'realistic_product_photo_of_a_g_2026-06-03T09-35-30.png',      // 银河星尘
+  28:'realistic_product_photo_of_a_d_2026-06-03T09-36-10.png',      // 龙鳞幻彩
+  29:'realistic_product_photo_of_an__2026-06-03T09-25-08.png',      // 时光沙漏
+  30:'realistic_product_photo_of_a_u_2026-06-03T09-24-49.png',      // 独角兽之泪
+  31:'realistic_product_photo_of_a_c_2026-06-03T09-27-14.png',      // 皇冠荣耀
+  32:'realistic_product_photo_of_an__2026-06-03T09-27-15.png',      // 字母A-Z
+  33:'A_realistic_product_photo_of_a_2026-06-03T09-44-09.png',      // 橄榄枝叶
+  34:'realistic_product_photo_of_a_m_2026-06-03T09-25-37.png',      // 音符♪
+  35:'realistic_product_photo_of_an__2026-06-03T09-27-19.png',      // 无限符号∞
+  36:'realistic_product_photo_of_a_s_2026-06-03T09-27-55.png',      // 雪花结晶❄
+  37:'realistic_product_photo_of_a_g_2026-06-03T09-35-30.png',      // 太阳光芒☀ (与银河星尘共用，因API限制)
+  38:'realistic_product_photo_of_a_m_2026-06-03T09-29-14.png',      // 星月相伴
+  39:'realistic_product_photo_of_a_s_2026-06-03T09-29-16.png',      // 波浪海螺
+  40:'realistic_product_photo_of_a_d_2026-06-03T09-28-31.png',      // 钻石星芒
+
+  // ===== 施华洛世奇 XIRIUS 水钻/锆石 材料库 (ID 41~51) =====
+  41:'swarovski_pine_green_2024new.png',    // 松树绿【2024新品】Orchid Ignite
+  42:'swarovski_macaron_pink_S83.png',       // S83马卡粉 L167 Light Rose
+  43:'swarovski_macaron_green_S84.png',      // S84马卡绿 L168 Light Rose(绿)
+  44:'swarovski_mint_green_S26.png',         // S26薄荷绿L
+  45:'swarovski_denim_blue_S33.png',         // S33牛仔蓝266 Denim Blue
+  46:'swarovski_light_siam_red_S23.png',     // S23红色227 Light Siam
+  47:'swarovski_scarlet_red_S48.png',        // S48斯嘉丽红276 Scarlet
+  48:'swarovski_vintage_rose_S29.png',       // S29古典玫瑰319 Vintage Rose
+  49:'swarovski_moonlight_red_S108.png',     // 月光红S108【2025新品】Moonlight
+  50:'swarovski_moonlight_silk_S111.png',    // 月光丝绸S111【2025新品】Light Rose
+  51:'swarovski_blue_zircon_S08.png',        // S08蓝水晶229 Blue Zircon
+
+  // ===== 螺丝钉单钻耳钉 (ID 52~57) =====
+  52:'stud_purple_amethyst.png',              // 螺丝钉单钻·紫色紫水晶
+  53:'stud_aurora_ab.png',                    // 螺丝钉单钻·极光AB炫彩
+  54:'stud_sky_blue.png',                     // 螺丝钉单钻·天蓝
+  55:'stud_pink_rose.png',                    // 螺丝钉单钻·粉玫瑰
+  56:'stud_yellow_green.png',                 // 螺丝钉单钻·黄绿橄榄
+  57:'stud_light_green.png',                  // 螺丝钉单钻·浅绿薄荷
+
+  // ===== 耳圈/耳环配件 (ID 58~60) =====
+  58:'hoop_silver.png',                       // 银色基础耳圈
+  59:'swarovski_S07_light_rose_223.png',      // S07浅粉 Light Rose (223) 盒装
+  60:'swarovski_S02_light_turquoise_263.png', // S02浅翠蓝 Light Turquoise (263) 盒装
+
+  // ===== 施华洛世奇水钻盒装续 (ID 61~63) =====
+  61:'swarovski_S03_chrysolite_238.png',      // S03贵橄榄 Chrysolite (238) 盒装
+  62:'swarovski_S07_light_rose_223_box.png',  // S07浅粉盒装展示
+  63:'swarovski_S02_light_turquoise_263_box.png', // S02浅翠蓝盒装展示
+
+  // ===== 成品耳钉/耳环 (ID 64~72) =====
+  64:'earring_flower_pearl_full_diamond.png',  // 满钻花朵珍珠耳环
+  65:'earring_bow_lace_pearl.png',             // 蝴蝶结蕾丝珍珠耳环
+  66:'earring_bow_lace_pearl_alt.png',         // 蝴蝶结蕾丝珍珠(背面)
+  67:'earring_flower_tassel_white.png',        // 白色花朵流苏耳环
+  68:'earring_cat_paw_red.png',                // 红色猫爪耳钉
+  69:'earring_cat_paw_red_small.png',          // 猫爪耳钉小图
+  70:'earring_cross_star_blue.png',            // 蓝色十字架星芒耳钉
+  71:'earring_cross_purple_moon.png',          // 紫色十字架月亮耳钉
+  72:'earring_cross_purple_moon_alt.png',      // 紫色十字架月亮耳钉(背面)
+
+  // ===== 更多成品款式 (ID 73~85) =====
+  73:'earring_unknown_8934803.png',           // 耳钉款式-待确认
+  74:'earring_unknown_8911667.png',           // 耳钉款式-待确认
+  75:'earring_unknown_8896012.png',           // 耳钉款式-待确认
+  76:'earring_unknown_8886211.png',           // 耳钉款式-待确认
+  77:'earring_unknown_8886084.png',           // 耳钉款式-待确认
+  78:'earring_unknown_8863994.png',           // 耳钉款式-待确认
+  79:'earring_unknown_8826436.png',           // 耳钉款式-待确认
+  80:'earring_unknown_8818414.png',           // 耳钉款式-待确认
+  81:'earring_unknown_8792719.png',           // 耳钉款式-待确认
+  82:'earring_unknown_8771041.png',           // 耳钉款式-待确认
+  83:'earring_unknown_8767224.png',           // 耳钉款式-待确认
+  84:'earring_unknown_8728030.png',           // 耳钉款式-待确认
+  85:'earring_unknown_8713519.png',           // 耳钉款式-待确认
+
+  // ===== 水钻盒装补充 (ID 86) =====
+  86:'swarovski_S03_chrysolite_238_box.png',   // S03贵橄榄盒装展示
+};
+function earringImg(id, name, style) {
+  if (AI_IMAGES[id]) {
+    return EAR_IMG_DIR + AI_IMAGES[id];
+  }
+  // 兜底：使用纯色SVG占位
+  return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect fill="#2a2a3a" width="200" height="200"/><text x="100" y="110" text-anchor="middle" fill="#666" font-size="14" font-family="sans-serif">暂无图片</text></svg>');
+}
+
+const ALL_EARRINGS = [
+// ═══ 普通款 common (权重~48-52) ═══
+{id:1,name:'纯银圆珠',rarity:'common',style:'minimal',weight:50,
+image:earringImg(1),desc:'S925纯银圆珠，日常百搭入门首选'},
+
+{id:2,name:'金色细圈环',rarity:'common',style:'minimal',weight:49,
+image:earringImg(2),desc:'14K金极简圈环，ins博主同款'},
+
+{id:3,name:'玫瑰金小球',rarity:'common',style:'minimal',weight:50,
+image:earringImg(3),desc:'18K玫瑰金温润光泽，温柔气质'},
+
+{id:4,name:'淡水珍珠',rarity:'common',style:'elegant',weight:51,
+image:earringImg(4),desc:'天然淡水珍珠，温润柔和光泽感'},
+
+{id:5,name:'黑珍珠',rarity:'common',style:'elegant',weight:48,
+image:earringImg(5),desc:'大溪地黑珍珠，神秘高级质感'},
+
+{id:6,name:'粉色爱心',rarity:'common',style:'cute',weight:47,
+image:earringImg(6),desc:'甜美爱心造型，少女心爆棚'},
+
+{id:7,name:'金色五角星',rarity:'common',style:'cute',weight:46,
+image:earringImg(7),desc:'闪闪发光的金色星星耳钉'},
+
+{id:8,name:'弯月亮',rarity:'common',style:'cute',weight:45,
+image:earringImg(8),desc:'浪漫弯月造型，夜空中最亮的星'},
+
+{id:9,name:'钛钢圆盘',rarity:'common',style:'cool',weight:48,
+image:earringImg(9),desc:'哑光金属圆盘，冷淡工业风设计'},
+
+{id:10,name:'透明亚克力棒',rarity:'common',style:'minimal',weight:44,
+image:earringImg(10),desc:'透明亚克力长条，极简冷淡ins风'},
+
+{id:11,name:'小花苞',rarity:'common',style:'cute',weight:46,
+image:earringImg(11),desc:'含苞待放的花朵，清新自然'},
+
+{id:12,name:'贝壳纹理',rarity:'common',style:'elegant',weight:45,
+image:earringImg(12),desc:'天然贝壳扇形纹路，海洋气息满满'},
+
+// ═══ 稀有款 rare (权重20-27) ═══
+{id:13,name:'水滴锆石',rarity:'rare',style:'elegant',weight:26,
+image:earringImg(13),desc:'奥地利水晶水滴吊坠，折射七彩光芒'},
+
+{id:14,name:'四叶草幸运',rarity:'rare',style:'cute',weight:25,
+image:earringImg(14),desc:'据说能带来好运的幸运四叶草'},
+
+{id:15,name:'法式蝴蝶结',rarity:'rare',style:'cute',weight:27,
+image:earringImg(15),desc:'法式蝴蝶结缎带，甜美优雅'},
+
+{id:16,name:'国风铜钱',rarity:'rare',style:'vintage',weight:23,
+image:earringImg(16),desc:'新中式复古铜钱，国潮必备'},
+
+{id:17,name:'朋克十字架',rarity:'rare',style:'cool',weight:21,
+image:earringImg(17),desc:'酷飒朋克风十字架耳钉'},
+
+{id:18,name:'猫眼石',rarity:'rare',style:'elegant',weight:25,
+image:earringImg(18),desc:'迷人猫眼效果，随光线变幻色彩'},
+
+{id:19,name:'珍珠吊坠',rarity:'rare',style:'elegant',weight:24,
+image:earringImg(19),desc:'珍珠垂坠式，优雅知性气质'},
+
+{id:20,name:'几何三角框',rarity:'rare',style:'cool',weight:22,
+image:earringImg(20),desc:'极简三角形金属框，设计感十足'},
+
+{id:21,name:'小雏菊',rarity:'rare',style:'cute',weight:25,
+image:earringImg(21),desc:'清新小雏菊花朵，春日气息'},
+
+// ═══ 史诗款 epic (权重6-9) ═══
+{id:22,name:'极光渐变球',rarity:'epic',style:'cool',weight:8,
+image:earringImg(22),desc:'北极光般绚丽梦幻的渐变色球'},
+
+{id:23,name:'巴洛克珍珠',rarity:'epic',style:'vintage',weight:7,
+image:earringImg(23),desc:'不规则巴洛克异形珍珠，独特天然之美'},
+
+{id:24,name:'蕾丝花朵',rarity:'epic',style:'elegant',weight:9,
+image:earringImg(24),desc:'手工蕾丝八瓣花，精致宫廷风'},
+
+{id:25,name:'六棱柱宝石',rarity:'epic',style:'cool',weight:7,
+image:earringImg(25),desc:'六棱柱切割水晶，现代几何美学'},
+
+{id:26,name:'羽毛轻舞',rarity:'epic',style:'vintage',weight:8,
+image:earringImg(26),desc:'轻盈羽毛造型，波西米亚风情'},
+
+// ═══ 传说款 legendary (权重1-2) ═══
+{id:27,name:'银河星尘',rarity:'legendary',style:'elegant',weight:2,
+image:earringImg(27),desc:'整片银河都在你耳边闪烁'},
+
+{id:28,name:'龙鳞幻彩',rarity:'legendary',style:'cool',weight:2,
+image:earringImg(28),desc:'上古神龙之鳞，流光溢彩'},
+
+{id:29,name:'时光沙漏',rarity:'legendary',style:'vintage',weight:1.5,
+image:earringImg(29),desc:'凝固时光的魔法沙漏'},
+
+{id:30,name:'独角兽之泪',rarity:'legendary',style:'cute',weight:1.5,
+image:earringImg(30),desc:'传说中的独角兽梦幻泪滴'},
+
+{id:31,name:'皇冠荣耀',rarity:'legendary',style:'elegant',weight:1,
+image:earringImg(31),desc:'女王皇冠，至高无上的荣耀'},
+
+// ═══ 追加款式 ═══
+{id:32,name:'字母A-Z',rarity:'common',style:'cool',weight:44,
+image:earringImg(32),desc:'个性化字母标记，你的专属符号'},
+
+{id:33,name:'橄榄枝叶',rarity:'rare',style:'elegant',weight:23,
+image:earringImg(33),desc:'和平橄榄枝，优雅自然风'},
+
+{id:34,name:'音符♪',rarity:'common',style:'cute',weight:43,
+image:earringImg(34),desc:'音乐符号耳钉，文艺青年最爱'},
+
+{id:35,name:'无限符号∞',rarity:'rare',style:'cool',weight:22,
+image:earringImg(35),desc:'无限可能，永恒不变的承诺'},
+
+{id:36,name:'雪花结晶❄',rarity:'epic',style:'elegant',weight:7,
+image:earringImg(36),desc:'六角冰晶雪花，纯净无暇之美'},
+
+{id:37,name:'太阳光芒☀',rarity:'epic',style:'cool',weight:6,
+image:earringImg(37),desc:'金色阳光放射，温暖正能量'},
+
+{id:38,name:'月亮星星组合',rarity:'rare',style:'cute',weight:24,
+image:earringImg(38),desc:'星月相伴，浪漫夜空主题'},
+
+{id:39,name:'波浪海螺',rarity:'rare',style:'vintage',weight:21,
+image:earringImg(39),desc:'大海蓝色海螺纹，夏日海洋风'},
+
+{ id:40,name:'钻石星芒',rarity:'legendary',style:'elegant',weight:1,
+image:earringImg(40),desc:'钻石般闪耀的星形钻戒造型'},
+
+// ═══ 施华洛世奇 XIRIUS 水钻/锆石 材料库 (ID 41~51) ═══
+{ id:41,name:'松树绿🌲',rarity:'rare',style:'elegant',weight:24,
+image:earringImg(41),desc:'施华洛世奇 XIRIUS 1088 SS29 · Orchid Ignite (L171l) Unfoiled · 松树绿【2024新品】· 6mm单只'},
+
+{ id:42,name:'马卡粉🩷',rarity:'rare',style:'cute',weight:25,
+image:earringImg(42),desc:'施华洛世奇 XIRIUS 1088 SS29 · Light Rose (223) Foiled · S83马卡粉 L167 · 6mm单只'},
+
+{ id:43,name:'马卡绿💚',rarity:'rare',style:'elegant',weight:24,
+image:earringImg(43),desc:'施华洛世奇 XIRIUS 1088 SS29 · Light Rose (223) Foiled · S84马卡绿 L168 · 6mm单只'},
+
+{ id:44,name:'薄荷绿🍃',rarity:'rare',style:'elegant',weight:23,
+image:earringImg(44),desc:'施华洛世奇 XIRIUS 1088 SS29 · Light Rose (223) Foiled · S26薄荷绿L · 6mm单只'},
+
+{ id:45,name:'牛仔蓝👖',rarity:'rare',style:'cool',weight:22,
+image:earringImg(45),desc:'施华洛世奇 XIRIUS 1088 SS29 · Denim Blue (266) Foiled · S33牛仔蓝 · 6mm单只'},
+
+{ id:46,name:'红色❤️‍🔥',rarity:'epic',style:'cool',weight:8,
+image:earringImg(46),desc:'施华洛世奇 XIRIUS 1088 SS29 · Light Siam (227) Foiled · S23红色 · 6mm单只'},
+
+{ id:47,name:'斯嘉丽红💎',rarity:'epic',style:'elegant',weight:9,
+image:earringImg(47),desc:'施华洛世奇 XIRIUS 1088 SS29 · Scarlet (276) Foiled · S48斯嘉丽红 · 6mm单只'},
+
+{ id:48,name:'古典玫瑰🌹',rarity:'rare',style:'vintage',weight:26,
+image:earringImg(48),desc:'施华洛世奇 XIRIUS 1088 SS29 · Vintage Rose (319) Foiled · S29古典玫瑰 · 6mm单只'},
+
+{ id:49,name:'月光红🌙',rarity:'legendary',style:'elegant',weight:2,
+image:earringImg(49),desc:'施华洛世奇 XIRIUS 1088 SS29 · Light Siam Moonlight (MOL) Foiled · 月光红S108 【2025新品】· 6mm单只'},
+
+{ id:50,name:'月光丝绸✨',rarity:'legendary',style:'elegant',weight:2,
+image:earringImg(50),desc:'施华洛世奇 XIRIUS 1088 SS29 · Light Rose (223) Foiled · 月光丝绸S111 【2025新品】· 6mm单只'},
+
+{ id:51,name:'蓝水晶💎',rarity:'epic',style:'cool',weight:8,
+image:earringImg(51),desc:'施华洛世奇 XIRIUS 1088 SS29 · Blue Zircon (229) Foiled · S08蓝水晶 · 6mm单只'},
+
+// ═══ 螺丝钉单钻耳钉 (ID 52~57) ═══
+{ id:52,name:'紫水晶🔮',rarity:'rare',style:'elegant',weight:22,
+image:earringImg(52),desc:'螺丝钉式单钻耳钉 · 紫色紫水晶 · 精致小巧' },
+
+{ id:53,name:'极光AB🌈',rarity:'epic',style:'cool',weight:8,
+image:earringImg(53),desc:'螺丝钉式单钻耳钉 · 极光AB炫彩 · 变幻光芒' },
+
+{ id:54,name:'天蓝钻💙',rarity:'rare',style:'cute',weight:23,
+image:earringImg(54),desc:'螺丝钉式单钻耳钉 · 天蓝 · 清新透明感' },
+
+{ id:55,name:'粉玫瑰🌸',rarity:'rare',style:'cute',weight:24,
+image:earringImg(55),desc:'螺丝钉式单钻耳钉 · 粉玫瑰 · 甜美温柔' },
+
+{ id:56,name:'黄绿橄榄💛',rarity:'rare',style:'elegant',weight:22,
+image:earringImg(56),desc:'螺丝钉式单钻耳钉 · 黄绿橄榄色 · 独特个性' },
+
+{ id:57,name:'浅绿薄荷🍃',rarity:'rare',style:'elegant',weight:23,
+image:earringImg(57),desc:'螺丝钉式单钻耳钉 · 浅绿薄荷 · 清新夏日感' },
+
+// ═══ 耳圈/耳环配件 (ID 58~60) ═══
+{ id:58,name:'银色耳圈⭕',rarity:'common',style:'minimal',weight:45,
+image:earringImg(58),desc:'基础款银色耳圈 · 百搭必备单品' },
+
+{ id:59,name:'浅粉水钻S07🩷',rarity:'rare',style:'cute',weight:24,
+image:earringImg(59),desc:'施华洛世奇 XIRIUS 1088 SS29 · Light Rose (223) Foiled · S07浅粉 · 6mm单只' },
+
+{ id:60,name:'浅翠蓝水钻S02🩵',rarity:'rare',style:'cool',weight:22,
+image:earringImg(60),desc:'施华洛世奇 XIRIUS 1088 SS29 · Light Turquoise (263) Foiled · S02浅翠蓝 · 6mm单只' },
+
+// ═══ 施华洛世奇水钻盒装 (ID 61~63) ═══
+{ id:61,name:'贵橄榄水钻S03💚',rarity:'rare',style:'elegant',weight:22,
+image:earringImg(61),desc:'施华洛世奇 XIRIUS 1088 SS29 · Chrysolite (238) Foiled · S03贵橄榄 · 6mm单只' },
+
+{ id:62,name:'浅粉S07盒装📦',rarity:'rare',style:'cute',weight:24,
+image:earringImg(62),desc:'施华洛世奇 S07浅粉 1088 SS29 盒装展示' },
+
+{ id:63,name:'浅翠蓝S02盒装📦',rarity:'rare',style:'cool',weight:22,
+image:earringImg(63),desc:'施华洛世奇 S02浅翠蓝 1088 SS29 盒装展示' },
+
+// ═══ 成品耳钉/耳环 (ID 64~72) ═══
+{ id:64,name:'满钻花朵珍珠💐',rarity:'epic',style:'elegant',weight:7,
+image:earringImg(64),desc:'满钻花朵搭配珍珠 · 精致华丽 · 耳环款' },
+
+{ id:65,name:'蝴蝶结蕾丝🎀',rarity:'epic',style:'cute',weight:8,
+image:earringImg(65),desc:'蝴蝶结蕾丝造型 · 珍珠点缀 · 甜美优雅耳环' },
+
+{ id:66,name:'蝴蝶结蕾丝(背面)🎀',rarity:'epic',style:'cute',weight:8,
+image:earringImg(66),desc:'蝴蝶结蕾丝珍珠耳环 · 背面展示' },
+
+{ id:67,name:'白花流苏🌼',rarity:'rare',style:'vintage',weight:21,
+image:earringImg(67),desc:'白色花朵流苏耳环 · 波西米亚风情' },
+
+{ id:68,name:'红色猫爪🐾',rarity:'rare',style:'cute',weight:24,
+image:earringImg(68),desc:'可爱红色猫爪造型耳钉 · 萌趣十足' },
+
+{ id:69,name:'猫爪小图🐾',rarity:'rare',style:'cute',weight:24,
+image:earringImg(69),desc:'猫爪耳钉细节小图' },
+
+{ id:70,name:'蓝十字星芒✝',rarity:'epic',style:'cool',weight:7,
+image:earringImg(70),desc:'蓝色十字架镶嵌星芒钻石 · 朋克酷感耳钉' },
+
+{ id:71,name:'紫十字月亮🌙',rarity:'epic',style:'vintage',weight:7,
+image:earringImg(71),desc:'紫色十字架配月亮造型 · 神秘哥特风耳钉' },
+
+{ id:72,name:'紫十字月亮(背面)🌙',rarity:'epic',style:'vintage',weight:7,
+image:earringImg(72),desc:'紫色十字架月亮耳钉 · 背面展示' },
+
+// ═══ 更多成品款式 (ID 73~85) ═══
+{ id:73,name:'耳钉 #73',rarity:'rare',style:'elegant',weight:20,
+image:earringImg(73),desc:'精美耳钉 · 详情待补充' },
+
+{ id:74,name:'耳钉 #74',rarity:'rare',style:'cute',weight:20,
+image:earringImg(74),desc:'精美耳钉 · 详情待补充' },
+
+{ id:75,name:'耳钉 #75',rarity:'rare',style:'cool',weight:20,
+image:earringImg(75),desc:'精美耳钉 · 详情待补充' },
+
+{ id:76,name:'耳钉 #76',rarity:'rare',style:'elegant',weight:20,
+image:earringImg(76),desc:'精美耳钉 · 详情待补充' },
+
+{ id:77,name:'耳钉 #77',rarity:'rare',style:'vintage',weight:20,
+image:earringImg(77),desc:'精美耳钉 · 详情待补充' },
+
+{ id:78,name:'耳钉 #78',rarity:'rare',style:'cute',weight:20,
+image:earringImg(78),desc:'精美耳钉 · 详情待补充' },
+
+{ id:79,name:'耳钉 #79',rarity:'rare',style:'cool',weight:20,
+image:earringImg(79),desc:'精美耳钉 · 详情待补充' },
+
+{ id:80,name:'耳钉 #80',rarity:'rare',style:'elegant',weight:20,
+image:earringImg(80),desc:'精美耳钉 · 详情待补充' },
+
+{ id:81,name:'耳钉 #81',rarity:'rare',style:'cute',weight:20,
+image:earringImg(81),desc:'精美耳钉 · 详情待补充' },
+
+{ id:82,name:'耳圈 #82',rarity:'rare',style:'vintage',weight:20,
+image:earringImg(82),desc:'精美耳圈 · 详情待补充' },
+
+{ id:83,name:'耳钉 #83',rarity:'rare',style:'cool',weight:20,
+image:earringImg(83),desc:'精美耳钉 · 详情待补充' },
+
+{ id:84,name:'耳钉 #84',rarity:'rare',style:'elegant',weight:20,
+image:earringImg(84),desc:'精美耳钉 · 详情待补充' },
+
+{ id:85,name:'耳圈 #85',rarity:'rare',style:'cute',weight:20,
+image:earringImg(85),desc:'精美耳圈 · 详情待补充' },
+
+// ═══ 补充图片 (ID 86) ═══
+{ id:86,name:'贵橄榄S03盒装📦',rarity:'rare',style:'elegant',weight:22,
+image:earringImg(86),desc:'施华洛世奇 S03贵橄榄 1088 SS29 盒装展示' },
+];
+
+// ==================== Storage ====================
+function safeGet(k,d){try{const v=localStorage.getItem('ev_'+k);return v?JSON.parse(v):d}catch{return d}}
+function safeSet(k,v){try{localStorage.setItem('ev_'+k,JSON.stringify(v))}catch{}}
+function getCollection(){return safeGet('collection',[])}
+function addToCollection(id,status){const c=getCollection();const e=c.find(i=>i.id===id);if(e)e.status=status;else c.push({id,status,addedAt:Date.now()});safeSet('collection',c);return c}
+function removeFromCollection(id){const c=getCollection().filter(i=>i.id!==id);safeSet('collection',c);return c}
+function canGachaToday(){const last=safeGet('lastDate','');const today=new Date().toISOString().split('T')[0];return last!==today}
+function recordGacha(r){const h=safeGet('history',[]);h.unshift({...r,drawnAt:Date.now(),date:new Date().toISOString().split('T')[0]});if(h.length>100)h.length=100;safeSet('history',h);safeSet('lastDate',new Date().toISOString().split('T')[0]);return h}
+function getGachaHistory(){return safeGet('history',[])}
+function getWishPool(){return safeGet('wishes',[])}
+function addToWishPool(w){const p=getWishPool();p.unshift({...w,addedAt:Date.now()});if(p.length>10)p.length=10;safeSet('wishes',p);return p}
+function removeFromWish(idx){const p=getWishPool();p.splice(idx,1);safeSet('wishes',p);return p}
+function getEarHoles(){return safeGet('holes',{left:[],right:[]})}
+function addEarHole(side,pos){const h=getEarHoles();const n={id:side+'-'+Date.now(),side,position:pos,piercedAt:Date.now(),equippedEarring:null};h[side].push(n);safeSet('holes',h);return h}
+function removeEarHole(side,id){const h=getEarHoles();h[side]=h[side].filter(ho=>ho.id!==id);safeSet('holes',h);return h}
+function equipEarring(side,holeId,eId){const h=getEarHoles();const ho=h[side].find(x=>x.id===holeId);if(ho)ho.equippedEarring=eId;safeSet('holes',h);return h}
+function getHealingRecords(){return safeGet('healing',{})}
+function addHealingRecord(date,note){const r=getHealingRecords();if(!r[date])r[date]=[];r[date].push({note,time:new Date().toLocaleTimeString()});safeSet('healing',r);return r}
+function daysSince(ts){return Math.floor((Date.now()-ts)/(86400000))}
+function getHealingStage(days){if(days<7)return{stage:'fresh',label:'新打孔',color:'#ef5350',tips:'每天转动耳钉，保持清洁'};if(days<30)return{stage:'healing',label:'愈合中',color:'#ff9800',tips:'避免碰水，继续消毒护理'};if(days<90)return{stage:'stable',label:'基本稳定',color:'#4caf50',tips:'可以更换不同材质耳钉'};return{stage:'healed',label:'完全愈合',color:'#81c784',tips:'可以随意搭配各种耳饰啦！'}}
+function weightedRandomDraw(pool){const tw=ALL_EARRINGS.reduce((s,e)=>s+e.weight,0);let r=Math.random()*tw;for(const e of ALL_EARRINGS){let w=e.weight;if(pool&&pool.includes(e.style))w*=1.3;r-=w;if(r<=0)return e}return ALL_EARRINGS[ALL_EARRINGS.length-1]}
+
+// ==================== Vue App ====================
+const {createApp,ref,reactive,computed,watch,onMounted,nextTick} = Vue;
+
+const app = createApp({
+  setup(){
+    const page=ref('index');
+    const gachaPhase=ref('idle'); // idle|shaking|revealed
+    const gachaResult=ref(null);
+    const canDraw=ref(true);
+    const gachaHistory=ref([]);
+    const collection=ref([]);
+    const wishPool=ref([]);
+    const holes=ref({left:[],right:[]});
+    const detailItem=ref(null);
+    const showAddHole=ref(false);
+    const showEquip=ref(false);
+    const selectedPos=ref('lobe');
+    const addHoleSide=ref('left');
+    const equipSide=ref(null);
+    const equipHoleId=ref(null);
+    const selectedEarringId=ref(null);
+    const showRecordInput=ref(false);
+    const newRecordNote=ref('');
+    const selectedDate=ref(new Date().toISOString().split('T')[0]);
+    const recordsData=ref({});
+    const calendarYear=ref(new Date().getFullYear());
+    const calendarMonth=ref(new Date().getMonth()+1);
+    const activeTab=ref('all');
+    const styleFilter=ref('');
+
+    // ===== INDEX =====
+    const ownedCount=computed(()=>getCollection().filter(c=>c.status==='owned').length);
+    const historyTotal=computed(()=>getGachaHistory().length);
+    const holeTotal=computed(()=>{const h=getEarHoles();return(h.left?.length||0)+(h.right?.length||0)});
+    const recentEarring=computed(()=>{const h=getGachaHistory();return h.length?ALL_EARRINGS.find(e=>e.id===h[0].id):null});
+
+    function refreshAll(){
+      canDraw.value=canGachaToday();
+      gachaHistory.value=getGachaHistory();
+      collection.value=getCollection();
+      wishPool.value=getWishPool();
+      holes.value=getEarHoles();
+      recordsData.value=getHealingRecords();
+    }
+
+    onMounted(refreshAll);
+
+    // ===== GACHA =====
+    async function startGacha(){
+      if(!canDraw.value)return;
+      gachaPhase.value='shaking';
+      await sleep(600);
+      if(navigator.vibrate)navigator.vibrate(200);
+      await sleep(800);
+      if(navigator.vibrate)navigator.vibrate(500);
+      await sleep(600);
+      const pool=[];
+      gachaResult.value=weightedRandomDraw(pool);
+      gachaHistory.value=recordGacha(gachaResult.value);
+      canDraw.value=false;
+      gachaPhase.value='revealed';
+    }
+    function markOwned(){
+      if(gachaResult.value){collection.value=addToCollection(gachaResult.value.id,'owned');alert('已标记为拥有！')}
+    }
+    function markWanted(){
+      if(gachaResult.value){collection.value=addToCollection(gachaResult.value.id,'wanted');alert('已加入想要清单！')}
+    }
+
+    // ===== COLLECTION =====
+    const filteredCollection=computed(()=>{
+      let list=ALL_EARRINGS.filter(e=>{
+        if(activeTab.value==='owned'){
+          const c=getCollection().find(i=>i.id===e.id);
+          if(!c||c.status!=='owned')return false;
+        }else if(activeTab.value==='wanted'){
+          const c=getCollection().find(i=>i.id===e.id);
+          if(!c||c.status!=='wanted')return false;
+        }
+        // 'all': 显示所有耳钉
+        if(styleFilter.value&&e.style!==styleFilter.value)return false;
+        return true;
+      });
+      return list;
+    });
+    function showDetail(item){detailItem.value=item}
+    function toggleStatus(id,status){collection.value=addToCollection(id,status)}
+    function removeColl(id){collection.value=removeFromCollection(id);detailItem.value=null}
+
+    // ===== EAR MAP =====
+    function onAddHole(side){
+      addHoleSide.value=side;
+      showAddHole.value=true;
+    }
+    function confirmAddHole(){
+      // 预设位置已废弃，使用点击坐标
+      if(clickedPos.value){
+        holes.value=addEarHole(addHoleSide.value,{x:clickedPos.value.x,y:clickedPos.value.y,name:clickedPos.value.name,key:'custom'});
+        clickedPos.value=null;
+        showAddHole.value=false;
+      }
+    }
+    const clickedPos=ref(null);
+    function onEarClick(side,event){
+      const wrap=event.currentTarget;
+      const rect=wrap.getBoundingClientRect();
+      const pctX=((event.clientX-rect.left)/rect.width*100).toFixed(1);
+      const pctY=((event.clientY-rect.top)/rect.height*100).toFixed(1);
+      const name=EAR_POSITIONS.reduce((best,p)=>{
+        const dx=Math.abs(parseFloat(pctX)-p.x),dy=Math.abs(parseFloat(pctY)-p.y);
+        const d=dx*dx+dy*dy;
+        return d<best.d?{d,name:p.name}:best;
+      },{d:Infinity,name:'自定义位置'}).name;
+      clickedPos.value={x:parseFloat(pctX),y:parseFloat(pctY),name};
+      addHoleSide.value=side;
+      showAddHole.value=true;
+    }
+    function openEquipPanel(side,holeId){
+      equipSide.value=side;equipHoleId.value=holeId;selectedEarringId.value=null;showEquip.value=true;
+    }
+    function confirmEquip(){
+      if(selectedEarringId.value&&equipSide.value&&equipHoleId.value){
+        holes.value=equipEarring(equipSide.value,equipHoleId.value,selectedEarringId.value);showEquip.value=false;
+      }
+    }
+    function doUnequip(side,holeId){holes.value=equipEarring(side,holeId,null)}
+    function removeHole(side,holeId){if(confirm('确定删除？')){holes.value=removeEarHole(side,holeId)}}
+
+    // ===== WISH POOL =====
+    function uploadWish(){
+      const input=document.createElement('input');input.type='file';input.accept='image/*';
+      input.onchange=(e)=>{
+        const file=e.target.files[0];
+        if(!file)return;
+        if(wishPool.value.length>=10){alert('最多10张许愿图');return}
+        const reader=new FileReader();
+        reader.onload=(ev)=>{
+          const styles=Object.keys(STYLE_CONFIG);
+          const s=styles[Math.floor(Math.random()*styles.length)];
+          wishPool.value=addToWishPool({imagePath:ev.target.result,style:s});
+          alert('已添加！识别为「'+STYLE_CONFIG[s].label+'」风格');
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    }
+    function removeWish(idx){if(confirm('移除？')){wishPool.value=removeFromWish(idx)}}
+    const styleBonus=computed(()=>{const s={};wishPool.value.forEach(w=>{if(w.style)s[w.style]=(s[w.style]||0)+1});return s});
+
+    // ===== CALENDAR =====
+    const calendarCells=computed(()=>{
+      const y=calendarYear.value,m=calendarMonth.value;
+      const total=new Date(y,m,0).getDate(),firstD=new Date(y,m-1,1).getDay();
+      const todayStr=new Date().toISOString().split('T')[0];
+      const cells=[];
+      const prevDays=new Date(y,m-1,0).getDate();
+      for(let i=firstD-1;i>=0;i--){
+        const d=prevDays-i;
+        const ds=`${y}-${String(m-1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        cells.push({day:d,dateStr:ds,currentMonth:false,isToday:false,hasRecord:!!recordsData.value[ds]});
+      }
+      for(let d=1;d<=total;d++){
+        const ds=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        cells.push({day:d,dateStr:ds,currentMonth:true,isToday:ds===todayStr,hasRecord:!!recordsData.value[ds]});
+      }
+      const rem=42-cells.length;
+      for(let i=1;i<=rem;i++){
+        const nm=m+1>12?1:m+1,ny=nm===1?y+1:y;
+        const ds=`${ny}-${String(nm).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+        cells.push({day:i,dateStr:ds,currentMonth:false,isToday:false,hasRecord:!!recordsData.value[ds]});
+      }
+      return cells;
+    });
+    const selectedRecords=computed(()=>recordsData.value[selectedDate.value]||[]);
+    const allHoles=computed(()=>[...(holes.value.left||[]),...(holes.value.right||[])]);
+    function selectDateCell(cell){if(cell.dateStr)selectedDate.value=cell.dateStr}
+    function prevMonth(){if(calendarMonth.value===1){calendarMonth.value=12;calendarYear.value--}else calendarMonth.value--}
+    function nextMonth(){if(calendarMonth.value===12){calendarMonth.value=1;calendarYear.value++}else calendarMonth.value++}
+    function saveRecord(){
+      if(!newRecordNote.value.trim())return;
+      recordsData.value=addHealingRecord(selectedDate.value,newRecordNote.value.trim());
+      newRecordNote.value='';showRecordInput.value=false;
+    }
+
+    return {
+      page,ALL_EARRINGS,RARITY_CONFIG,STYLE_CONFIG,EAR_POSITIONS,
+      // Index
+      ownedCount,historyTotal,holeTotal,recentEarring,canDraw,
+      // Gacha
+      gachaPhase,gachaResult,gachaHistory,startGacha,markOwned,markWanted,
+      // Collection
+      collection,activeTab,styleFilter,filteredCollection,showDetail,detailItem,toggleStatus,removeColl,
+      // EarMap
+      holes,showAddHole,addHoleSide,clickedPos,onEarClick,confirmAddHole,
+      showEquip,selectedEarringId,openEquipPanel,confirmEquip,doUnequip,removeHole,
+      // Wish
+      wishPool,uploadWish,removeWish,styleBonus,
+      // Calendar
+      calendarYear,calendarMonth,calendarCells,selectedDate,selectedRecords,allHoles,
+      selectDateCell,prevMonth,nextMonth,showRecordInput,newRecordNote,saveRecord,
+      // Helpers
+      daysSince,getHealingStage,
+      formatDate(ts){const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},
+      getEarringImg(id){const e=ALL_EARRINGS.find(x=>x.id===id);return e?e.image:''},
+      getPosName(pos){return pos.name||'('+Math.round(pos.x)+'%,'+Math.round(pos.y)+'%)'},
+      getStatusText(id){const c=getCollection().find(i=>i.id===id);return c?c.status:''},
+    };
+  },
+  template:/*html*/`
+<div class="container">
+  <!-- NAV -->
+  <div class="nav">
+    <div class="logo-area">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">EarVault</span>
+      <span class="logo-sub">耳钉洞藏</span>
+    </div>
+    <span class="nav-wish" @click="page='wishpool'">💫<span class="wish-badge" v-if="wishPool.length">{{wishPool.length}}</span></span>
+  </div>
+
+  <!-- ===== INDEX PAGE ===== -->
+  <div class="page-section" :class="{active:page==='index'}">
+    <div class="hero">
+      <div class="hero-bg"><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div></div>
+      <h1 class="hero-title">叮当耳阁</h1>
+      <p class="hero-sub">每日一次 · 虚拟耳钉盲盒</p>
+      <div class="gacha-card">
+        <div class="gacha-ready" v-if="canDraw"><span class="pulse-dot"></span>今日盲盒已就绪</div>
+        <div class="gacha-done" v-else><span class="check-icon">✓</span>今日已抽取</div>
+        <button class="gacha-btn" :class="canDraw?'btn-primary':'btn-disabled'" @click="canDraw?page='gacha':null">
+          {{canDraw?'🎁 开始抽取':'⏰ 明天再来'}}
+        </button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat-item" @click="page='collection'"><span class="stat-num">{{ownedCount}}</span><span class="stat-label">收藏</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat-item"><span class="stat-num">{{historyTotal}}</span><span class="stat-label">已抽取</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat-item" @click="page='earmap'"><span class="stat-num">{{holeTotal}}</span><span class="stat-label">耳洞</span></div>
+    </div>
+    <div class="section" v-if="recentEarring">
+      <div class="section-header"><span class="section-title">最近获得</span><span class="section-more" @click="page='gacha'">查看全部 ›</span></div>
+      <div class="recent-card">
+        <img class="recent-img" :src="recentEarring.image">
+        <div class="recent-info">
+          <span class="recent-name">{{recentEarring.name}}</span>
+          <span class="recent-rarity" :style="{color:RARITY_CONFIG[recentEarring.rarity].color}">{{RARITY_CONFIG[recentEarring.rarity].label}}</span>
+        </div>
+        <div class="recent-glow" :class="'glow-'+recentEarring.rarity"></div>
+      </div>
+    </div>
+    <div class="quick">
+      <button class="entry" @click="page='earmap'"><span class="entry-icon ear">👂</span>耳洞规划</button>
+      <button class="entry" @click="page='calendar'"><span class="entry-icon cal">📅</span>愈合日历</button>
+      <button class="entry" @click="page='wishpool'"><span class="entry-icon wish">✨</span>许愿池</button>
+      <button class="entry" @click="page='collection'"><span class="entry-icon coll">💎</span>图鉴</button>
+    </div>
+  </div>
+
+  <!-- ===== GACHA PAGE ===== -->
+  <div class="page-section" :class="{active:page==='gacha'}">
+    <div class="gacha-machine">
+      <!-- Idle -->
+      <template v-if="gachaPhase==='idle'&&canDraw">
+        <div class="mystery-box" :class="{shake:gachaPhase==='shaking'}" @click="startGacha">
+          <div class="ribbon-h"></div><div class="ribbon-v"></div>
+          <div class="box-body"><span class="box-emoji">🎁</span><span class="box-text">点击开启盲盒</span></div>
+          <div class="box-glow"></div>
+        </div>
+      </template>
+      <!-- Shaking -->
+      <template v-if="gachaPhase==='shaking'">
+        <div class="mystery-box super-shake"><div class="box-body"><span class="box-emoji">🎁</span></div></div>
+        <p class="shake-text">正在抽取...</p>
+      </template>
+      <!-- Revealed -->
+      <template v-if="gachaPhase==='revealed'&&gachaResult">
+        <div class="result-reveal" style="position:relative">
+          <div class="recent-glow" :class="'glow-'+gachaResult.rarity" style="position:absolute;width:250px;height:250px;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;filter:blur(40px);opacity:.4"></div>
+          <img class="result-image" :src="gachaResult.image">
+          <span class="result-name">{{gachaResult.name}}</span>
+          <span class="result-rarity" :style="{color:RARITY_CONFIG[gachaResult.rarity].color}">{{RARITY_CONFIG[gachaResult.rarity].label}}</span>
+          <p class="result-desc">{{gachaResult.desc}}</p>
+        </div>
+        <div class="result-actions">
+          <button class="action-btn btn-owned" @click="markOwned">✓ 已拥有</button>
+          <button class="action-btn btn-wanted" @click="markWanted">♥ 想要</button>
+        </div>
+        <button class="btn-outline" @click="page='collection'">查看我的收藏 →</button>
+      </template>
+      <!-- No draw -->
+      <template v-if="gachaPhase==='idle'&&!canDraw">
+        <div class="no-draw"><span class="no-draw-icon">⏰</span><span class="no-draw-text">今天已经抽过啦</span><span class="no-draw-sub">明天再来吧~</span></div>
+      </template>
+      <!-- Wish hint -->
+      <div class="wish-hint" v-if="wishPool.length"><span class="wish-icon">✨</span><span class="wish-text">许愿加成激活！概率提升30%</span></div>
+    </div>
+    <!-- History -->
+    <div class="history-preview" v-if="gachaHistory.length">
+      <span class="preview-title">抽取历史</span>
+      <div class="history-scroll"><div class="history-list">
+        <div v-for="(item,i) in gachaHistory.slice(0,20)" :key="i" class="history-item" :class="'hist-'+item.rarity">
+          <img :src="ALL_EARRINGS.find(e=>e.id===item.id)?.image" alt="">
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ===== COLLECTION PAGE ===== -->
+  <div class="page-section" :class="{active:page==='collection'}">
+    <div class="filter-tabs">
+      <span class="filter-tab" :class="{active:activeTab==='all'}" @click="activeTab='all'">全部图鉴</span>
+      <span class="filter-tab" :class="{active:activeTab==='owned'}" @click="activeTab='owned'">已拥有</span>
+      <span class="filter-tab" :class="{active:activeTab==='wanted'}" @click="activeTab='wanted'">想要</span>
+    </div>
+    <div class="filter-chips"><div class="chip-list">
+      <span class="filter-chip" :class="{active:styleFilter===''}" @click="styleFilter=''">全部</span>
+      <span v-for="(cfg,key) in STYLE_CONFIG" :key="key" class="filter-chip" :class="{active:styleFilter===key}" @click="styleFilter=key">{{cfg.icon}} {{cfg.label}}</span>
+    </div></div>
+    <div class="collection-grid">
+      <div v-for="item in filteredCollection" :key="item.id" class="collection-item" :class="'rarity-'+item.rarity" @click="showDetail(item)">
+        <div class="item-img-wrap">
+          <img :src="item.image">
+          <span class="status-tag" :class="getStatusText(item.id)||'hidden'">{{getStatusText(item.id)==='owned'?'✓':'♥'}}</span>
+        </div>
+        <span class="item-name">{{item.name}}</span>
+        <span class="item-rarity" :style="{color:RARITY_CONFIG[item.rarity].color}">{{RARITY_CONFIG[item.rarity].label}}</span>
+      </div>
+      <div v-if="filteredCollection.length===0&&activeTab!=='all'" class="empty-state">
+        <span class="empty-icon">📦</span><span class="empty-text">还没有收藏的耳钉</span><span class="empty-sub">去图鉴中标记拥有的耳钉吧~</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EAR MAP PAGE ===== -->
+  <div class="page-section" :class="{active:page==='earmap'}">
+    <div class="ear-stage">
+      <!-- 左耳 - 卡通风格 -->
+      <div class="ear-col">
+        <div class="ear-img-wrap" @click="onEarClick('left',$event)">
+          <img class="ear-img" src="../earring-images/ear-model-left.png" alt="左耳" style="pointer-events:none">
+          <!-- 耳洞位置点 / 耳饰缩略图 -->
+          <div v-for="hole in holes.left" :key="hole.id"
+               :class="hole.equippedEarring?'hole-earring':'hole-dot'"
+               :style="{left: hole.position.x+'%', top: hole.position.y+'%'}"
+               @click.stop="openEquipPanel('left',hole.id)">
+            <img v-if="hole.equippedEarring" :src="getEarringImg(hole.equippedEarring)" class="hole-earring-img">
+          </div>
+        </div>
+        <span class="ear-label">左耳 · {{holes.left.length}}洞</span>
+      </div>
+
+      <div class="center-ctrl">
+        <span class="side-label">👆 点击耳朵图片</span>
+        <span class="hole-count">标记耳洞位置</span>
+      </div>
+
+      <!-- 右耳 - 卡通风格 -->
+      <div class="ear-col">
+        <div class="ear-img-wrap" @click="onEarClick('right',$event)">
+          <img class="ear-img" src="../earring-images/ear-model-right.png" alt="右耳" style="pointer-events:none">
+          <!-- 耳洞位置点 / 耳饰缩略图 -->
+          <div v-for="hole in holes.right" :key="hole.id"
+               :class="hole.equippedEarring?'hole-earring':'hole-dot'"
+               :style="{left: hole.position.x+'%', top: hole.position.y+'%'}"
+               @click.stop="openEquipPanel('right',hole.id)">
+            <img v-if="hole.equippedEarring" :src="getEarringImg(hole.equippedEarring)" class="hole-earring-img">
+          </div>
+        </div>
+        <span class="ear-label">右耳 · {{holes.right.length}}洞</span>
+      </div>
+    </div>
+    <!-- Hole Details -->
+    <div class="hole-detail-section">
+      <h3 class="section-title">耳洞详情</h3>
+      <div class="hole-scroll"><div class="hole-card-list">
+        <div v-for="hole in allHoles" :key="hole.id" class="hole-card">
+          <span class="hole-name">{{hole.side==='left'?'左耳':'右耳'}} · {{getPosName(hole.position)}}</span>
+          <span class="hole-date">{{formatDate(hole.piercedAt)}}</span>
+          <span class="healing-badge" :style="{color:getHealingStage(daysSince(hole.piercedAt)).color,background:getHealingStage(daysSince(hole.piercedAt)).color+'18'}">{{getHealingStage(daysSince(hole.piercedAt)).label}}</span>
+          <div class="hole-actions-row">
+            <button class="hole-act-btn equip" @click="openEquipPanel(hole.side,hole.id)">{{hole.equippedEarring?'更换':'配戴'}}</button>
+            <button class="hole-act-btn remove" @click="removeHole(hole.side,hole.id)">删除</button>
+          </div>
+          <div v-if="hole.equippedEarring" class="current-equip">
+            <img :src="getEarringImg(hole.equippedEarring)"><span class="unequip-btn" @click="doUnequip(hole.side,hole.id)">取下</span>
+          </div>
+        </div>
+        <div v-if="allHoles.length===0" class="no-holes-tip">去添加耳洞吧~</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ===== WISH POOL PAGE ===== -->
+  <div class="page-section" :class="{active:page==='wishpool'}">
+    <div class="info-card">
+      <span class="info-icon">💡</span>
+      <div><span class="info-title">许愿池工作原理</span><span class="info-desc">上传你喜欢的耳钉图片，系统会分析其风格，在抽盲盒时将该风格概率提升约30%。</span></div>
+    </div>
+    <div class="upload-area" @click="uploadWish">
+      <span class="upload-icon">📷</span><span class="upload-text">点击上传喜欢的耳钉图片</span><span class="upload-hint">最多10张 · jpg/png</span>
+    </div>
+    <div v-if="wishPool.length">
+      <div class="wish-grid">
+        <div v-for="(wish,i) in wishPool" :key="i" class="wish-item">
+          <img :src="wish.imagePath">
+          <div class="wish-overlay">
+            <span class="wish-tag">{{STYLE_CONFIG[wish.style]?.label}}</span>
+            <span class="wish-del" @click.stop="removeWish(i)">✕</span>
+          </div>
+        </div>
+      </div>
+      <div class="bonus-preview">
+        <span class="bonus-title">当前加成效果</span>
+        <div class="bonus-tags">
+          <div v-for="(count,style) in styleBonus" :key="style" class="bonus-tag">
+            <span>{{STYLE_CONFIG[style]?.icon}}</span><span>{{STYLE_CONFIG[style]?.label}}</span><span class="tag-bonus">+{{Math.round(count*30)}}%</span>
+          </div>
+          <span v-if="!Object.keys(styleBonus).length" style="font-size:14px;color:#666">上传图片后查看加成效果</span>
+        </div>
+      </div>
+    </div>
+    <div v-else style="text-align:center;padding:60px 0">
+      <span style="font-size:56px">🌟</span><p style="font-size:18px;color:#888;margin-top:12px">还没有许愿哦</p>
+    </div>
+  </div>
+
+  <!-- ===== CALENDAR PAGE ===== -->
+  <div class="page-section" :class="{active:page==='calendar'}">
+    <div class="month-switcher">
+      <button class="switch-btn" @click="prevMonth">‹</button>
+      <span class="month-display">{{calendarYear}}年{{calendarMonth}}月</span>
+      <button class="switch-btn" @click="nextMonth">›</button>
+    </div>
+    <div class="calendar-grid">
+      <div class="weekday-row"><span v-for="d in ['日','一','二','三','四','五','六']" :key="d" class="weekday-cell">{{d}}</span></div>
+      <div class="date-cells">
+        <div v-for="(cell,i) in calendarCells" :key="i" class="date-cell" :class="{'other-month':!cell.currentMonth,'today':cell.isToday,'is-selected':selectedDate===cell.dateStr}" @click="selectDateCell(cell)">
+          <span class="date-num">{{cell.day}}</span><span v-if="cell.hasRecord&&cell.currentMonth" class="record-dot"></span>
+        </div>
+      </div>
+    </div>
+    <div class="date-detail" v-if="selectedDate">
+      <div class="detail-header"><span class="detail-date">{{selectedDate.split('-')[1]}}月{{parseInt(selectedDate.split('-')[2])}}日</span><span class="detail-dayofweek">周{{['日','一','二','三','四','五','六'][new Date(selectedDate).getDay()]}}</span></div>
+      <div v-if="selectedRecords.length===0" style="text-align:center;padding:20px 0">
+        <span style="font-size:40px">📝</span><p style="font-size:16px;color:#888;margin-top:8px">这一天还没有记录</p>
+        <button class="add-record-btn" @click="showRecordInput=true">+ 添加记录</button>
+      </div>
+      <div v-else>
+        <div v-for="(rec,i) in selectedRecords" :key="i" class="record-card">
+          <span class="record-note">{{rec.note}}</span><span class="record-time">{{rec.time}}</span>
+        </div>
+        <button class="add-more-btn" @click="showRecordInput=true">+ 再记一条</button>
+      </div>
+    </div>
+    <div class="healing-overview" v-if="allHoles.length">
+      <span class="overview-title">耳洞愈合总览</span>
+      <div class="timeline-list">
+        <div v-for="hole in allHoles" :key="'t'+hole.id" class="timeline-item">
+          <div class="timeline-dot" :style="{background:getHealingStage(daysSince(hole.piercedAt)).color}"></div>
+          <span class="timeline-side">{{hole.side==='left'?'左':'右'}} · {{getPosName(hole.position)}}</span>
+          <span class="timeline-days">{{daysSince(hole.piercedAt)}}天</span>
+          <span class="timeline-status" :style="{color:getHealingStage(daysSince(hole.piercedAt)).color}">{{getHealingStage(daysSince(hole.piercedAt)).label}}</span>
+          <span class="timeline-tip">{{getHealingStage(daysSince(hole.piercedAt)).tips}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Detail Modal ===== -->
+  <div class="modal-mask" v-if="detailItem" @click="detailItem=null">
+    <div class="modal-popup" @click.stop>
+      <div class="modal-header"><img :src="detailItem.image"></div>
+      <div class="modal-body">
+        <span class="modal-name">{{detailItem.name}}</span>
+        <div class="modal-meta">
+          <span class="meta-tag" :style="{color:RARITY_CONFIG[detailItem.rarity].color,borderColor:RARITY_CONFIG[detailItem.rarity].color}">{{RARITY_CONFIG[detailItem.rarity].label}}</span>
+          <span class="meta-tag">{{STYLE_CONFIG[detailItem.style].icon}} {{STYLE_CONFIG[detailItem.style].label}}</span>
+        </div>
+        <span class="modal-desc">{{detailItem.desc}}</span>
+        <div class="modal-actions">
+          <button class="action-btn btn-owned" @click="toggleStatus(detailItem.id,'owned')">{{getStatusText(detailItem.id)==='owned'?'✓ 已拥有':'标记拥有'}}</button>
+          <button class="action-btn btn-wanted" @click="toggleStatus(detailItem.id,'wanted')">{{getStatusText(detailItem.id)==='wanted'?'♥ 想要':'标记想要'}}</button>
+        </div>
+        <button v-if="getStatusText(detailItem.id)" class="btn-remove" @click="removeColl(detailItem.id)">移除收藏</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Add Hole Dialog ===== -->
+  <div class="dialog-mask" v-if="showAddHole" @click="showAddHole=false">
+    <div class="dialog-content" @click.stop>
+      <span class="dialog-title">添加新耳洞 ({{addHoleSide==='left'?'左耳':'右耳'}})</span>
+      <div style="text-align:center;padding:16px 0">
+        <span style="display:block;font-size:40px;margin-bottom:8px">📍</span>
+        <span style="display:block;font-size:16px;color:#ccc" v-if="clickedPos">{{clickedPos.name}}</span>
+        <span style="display:block;font-size:13px;color:#666;margin-top:4px" v-if="clickedPos">坐标 ({{clickedPos.x}}%, {{clickedPos.y}}%)</span>
+        <span style="display:block;font-size:14px;color:#888;margin-top:8px">点击确认在此位置打孔</span>
+      </div>
+      <div class="dialog-actions">
+        <button class="input-btn-cancel" style="flex:1;height:48px;border-radius:16px;border:none;cursor:pointer;font-size:16px;background:rgba(255,255,255,.06);color:#aaa" @click="showAddHole=false;clickedPos=null">取消</button>
+        <button class="input-btn-confirm" style="flex:1;height:48px;border-radius:16px;border:none;cursor:pointer;font-size:16px" @click="confirmAddHole" :disabled="!clickedPos">确认打孔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Equip Dialog ===== -->
+  <div class="dialog-mask" v-if="showEquip" @click="showEquip=false">
+    <div class="dialog-content" @click.stop>
+      <span class="dialog-title">选择耳钉配戴</span>
+      <div class="earring-selector"><div class="selector-grid">
+        <div v-for="e in ALL_EARRINGS" :key="'eq'+e.id" class="selectable-earring" :class="{selected:selectedEarringId===e.id}" @click="selectedEarringId=e.id">
+          <img :src="e.image"><span class="sel-name">{{e.name}}</span>
+        </div>
+      </div></div>
+      <div class="dialog-actions">
+        <button class="input-btn-cancel" style="flex:1;height:48px;border-radius:16px;border:none;cursor:pointer;font-size:16px;background:rgba(255,255,255,.06);color:#aaa" @click="showEquip=false">取消</button>
+        <button class="input-btn-confirm" style="flex:1;height:48px;border-radius:16px;border:none;cursor:pointer;font-size:16px" @click="confirmEquip" :disabled="!selectedEarringId">配戴</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Record Input Modal ===== -->
+  <div class="input-mask" v-if="showRecordInput" @click="showRecordInput=false">
+    <div class="input-dialog" @click.stop>
+      <span class="input-title">添加护理记录</span>
+      <textarea class="input-textarea" v-model="newRecordNote" placeholder="例如：今天转了耳钉，用酒精消了毒..." maxlength="200"></textarea>
+      <div class="input-actions">
+        <button class="input-btn-cancel" @click="showRecordInput=false">取消</button>
+        <button class="input-btn-confirm" @click="saveRecord" :disabled="!newRecordNote.trim()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Tab Bar ===== -->
+  <div class="tab-bar">
+    <button class="tab-item" :class="{active:page==='index'}" @click="page='index'"><span class="tab-icon">🏠</span>首页</button>
+    <button class="tab-item" :class="{active:page==='gacha'}" @click="page='gacha'"><span class="tab-icon">🎁</span>盲盒</button>
+    <button class="tab-item" :class="{active:page==='collection'}" @click="page='collection'"><span class="tab-icon">💎</span>收藏</button>
+    <button class="tab-item" :class="{active:page==='earmap'}" @click="page='earmap'"><span class="tab-icon">👂</span>规划</button>
+  </div>
+</div>`
+});
+
+app.mount('#app');
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+</script>
+</body>
+</html>
